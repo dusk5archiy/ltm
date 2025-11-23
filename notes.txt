@@ -1,0 +1,10 @@
+- user:
+  + crawl web
+  + sửa, xóa content
+
+- admin
+  + cũng có các quyền của user
+  + thống kê
+  + quản lí user
+
+- decent css

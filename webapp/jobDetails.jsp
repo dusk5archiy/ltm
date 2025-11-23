@@ -1,0 +1,186 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="app.model.bean.JobDetail" %>
+<%@ page import="app.model.bean.ScrapeJob" %>
+<%@ page import="com.google.gson.Gson" %>
+<%@ page import="com.google.gson.reflect.TypeToken" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Arrays" %>
+<%@ page import="java.util.HashMap" %>
+<html>
+<head>
+    <title>Job Details</title>
+    <style>
+        .job-container {
+            display: flex;
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 10px;
+        }
+        .job-main {
+            flex: 3;
+        }
+        .job-info {
+            flex: 1;
+            margin-left: 20px;
+            border-left: 1px solid #eee;
+            padding-left: 10px;
+        }
+        .skill-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .description-section h4 {
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        .description-section p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scrape Job Details</h1>
+    <%
+        ScrapeJob job = (ScrapeJob) request.getAttribute("job");
+    %>
+    <p><strong>Job ID:</strong> <%= job.getId() %></p>
+    <p><strong>Status:</strong> <span id="jobStatus"><%= job.getStatus() %></span></p>
+    <p><strong>Created At:</strong> <%= job.getCreatedAt() %></p>
+    <% if ("failed".equals(job.getStatus()) && job.getErrorMessage() != null) { %>
+        <p><strong>Error:</strong> <%= job.getErrorMessage() %></p>
+    <% } %>
+
+    <h2>Scraped Jobs</h2>
+    <div id="progressArea">
+        <label for="progressBar">Progress:</label>
+        <progress id="progressBar" value="<%= job.getScrapedCount() %>" max="<%= job.getTotalPages() %>"></progress>
+        <span id="progressText"><%= job.getScrapedCount() %>/<%= job.getTotalPages() %></span>
+    </div>
+    <%
+        List<JobDetail> details = (List<JobDetail>) request.getAttribute("details");
+        Gson gson = new Gson();
+        for (JobDetail detail : details) {
+            // Parse skills
+            List<String> skills = new ArrayList<>();
+            try {
+                skills = gson.fromJson(detail.getSkills(), new TypeToken<List<String>>(){}.getType());
+            } catch (Exception e) {
+                // Leave empty if parsing fails
+            }
+
+            // Parse descriptions
+            Map<String, String> descriptions = new HashMap<>();
+            try {
+                descriptions = gson.fromJson(detail.getDescriptions(), new TypeToken<Map<String, String>>(){}.getType());
+            } catch (Exception e) {
+                // Leave empty if parsing fails
+            }
+
+            // Parse jobInfo
+            Map<String, String> jobInfo = new HashMap<>();
+            try {
+                jobInfo = gson.fromJson(detail.getJobInfo(), new TypeToken<Map<String, String>>(){}.getType());
+            } catch (Exception e) {
+                // Leave empty if parsing fails
+            }
+    %>
+    <div class="job-container">
+        <div class="job-main">
+            <h3><%= detail.getJobTitle() %></h3>
+            <p><strong>Company:</strong> <a href="<%= detail.getCompanyUrl() %>"><%= detail.getCompanyName() %></a></p>
+            <p><strong>Province:</strong> <%= detail.getProvince() %></p>
+            <p><strong>Salary:</strong> <%= detail.getSalary() %></p>
+            <p><strong>URL:</strong> <a href="<%= detail.getUrl() %>"><%= detail.getUrl() %></a></p>
+            <% if (detail.getThumbnail() != null) { %>
+                <img src="<%= detail.getThumbnail() %>" alt="Thumbnail" style="max-width:200px;">
+            <% } %>
+            <% if (!descriptions.isEmpty()) { %>
+            <div class="description-section">
+                <% for (Map.Entry<String, String> entry : descriptions.entrySet()) { %>
+                    <h4><%= entry.getKey() %></h4>
+                    <p><%= entry.getValue() %></p>
+                <% } %>
+            </div>
+            <% } %>
+            <div>
+                <strong>Skills:</strong>
+                <% for (String skill : skills) { %>
+                    <span class="skill-tag"><%= skill %></span>
+                <% } %>
+            </div>
+        </div>
+        <div class="job-info">
+            <% if (!jobInfo.isEmpty()) { %>
+            <h4>Job Info</h4>
+            <% for (Map.Entry<String, String> entry : jobInfo.entrySet()) { %>
+                <p><strong><%= entry.getKey() %>:</strong> <%= entry.getValue() %></p>
+            <% } %>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
+    <a href="dashboard">Back to Dashboard</a>
+    <script>
+        (function() {
+            const jobId = '<%= job.getId() %>';
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const statusSpan = document.getElementById('jobStatus');
+
+            // Prefer SSE (EventSource) for live updates; fallback to polling
+            if (typeof(EventSource) !== 'undefined') {
+                const source = new EventSource('progress-sse?id=' + jobId);
+                source.onmessage = function(e) {
+                    try {
+                        const data = JSON.parse(e.data);
+                        const total = data.totalPages || 0;
+                        const scraped = data.scrapedCount || 0;
+                        progressBar.max = total > 0 ? total : 1;
+                        progressBar.value = scraped;
+                        progressText.textContent = scraped + '/' + total;
+                        if (statusSpan) statusSpan.textContent = data.status;
+                        if (data.status === 'completed' || data.status === 'failed') {
+                            source.close();
+                        }
+                    } catch (ex) {
+                        console.error('Bad SSE payload', ex);
+                    }
+                };
+                source.onerror = function(err) {
+                    console.error('SSE error', err);
+                    source.close();
+                };
+            } else {
+                function fetchProgress() {
+                    fetch('progress?id=' + jobId)
+                        .then(res => {
+                            if (!res.ok) throw new Error('Network error');
+                            return res.json();
+                        })
+                        .then(data => {
+                            const total = data.totalPages || 0;
+                            const scraped = data.scrapedCount || 0;
+                            progressBar.max = total > 0 ? total : 1;
+                            progressBar.value = scraped;
+                            progressText.textContent = scraped + '/' + total;
+                            if (statusSpan) statusSpan.textContent = data.status;
+                            if (data.status === 'completed' || data.status === 'failed') {
+                                clearInterval(pollInterval);
+                            }
+                        })
+                        .catch(err => console.error('Failed to fetch progress', err));
+                }
+
+                const pollInterval = setInterval(fetchProgress, 2000);
+                fetchProgress();
+            }
+        })();
+    </script>
+</body>
+</html>
