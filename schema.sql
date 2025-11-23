@@ -5,7 +5,8 @@ USE ltm;
 CREATE TABLE IF NOT EXISTS user (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    role ENUM('user', 'admin') DEFAULT 'user'
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_vietnamese_ci;
 
 CREATE TABLE IF NOT EXISTS scrape_job (
@@ -37,7 +38,7 @@ CREATE TABLE IF NOT EXISTS job_detail (
     FOREIGN KEY (scrape_job_id) REFERENCES scrape_job(id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_vietnamese_ci;
 
-INSERT INTO user (username, password) VALUES
-('admin', 'admin'),
-('user1', 'user1'),
-('user2', 'user2');
+INSERT INTO user (username, password, role) VALUES
+('admin', 'admin', 'admin'),
+('user1', 'user1', 'user'),
+('user2', 'user2', 'user');

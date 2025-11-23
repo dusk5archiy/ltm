@@ -1,9 +1,9 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <html>
 <head>
-    <title>My Jobs</title>
+    <title>Việc của tôi</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
         nav { margin-bottom: 20px; background-color: #fff; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -29,7 +29,7 @@
     <nav>
         <%@ include file="navbar.jsp" %>
     </nav>
-    <h1>My Scraped Jobs</h1>
+    <h1>Việc đã thu thập của tôi</h1>
     <table>
         <%
             List<JobDetail> jobDetails = (List<JobDetail>) request.getAttribute("jobDetails");
@@ -43,16 +43,16 @@
             %>
             <td>
                 <div class="job-card">
-                    <div class="job-title"><%= detail.getJobTitle() != null ? detail.getJobTitle() : "Untitled Job" %></div>
-                    <div class="company"><%= detail.getCompanyName() != null ? detail.getCompanyName() : "Unknown Company" %></div>
-                    <div class="location"><%= detail.getProvince() != null ? detail.getProvince() : "Location not specified" %></div>
-                    <div class="salary"><%= detail.getSalary() != null ? detail.getSalary() : "Salary not specified" %></div>
-                    <div class="url"><a href="jobView?id=<%= detail.getId() %>">View Job</a></div>
+                    <div class="job-title"><%= detail.getJobTitle() != null ? detail.getJobTitle() : "Việc làm chưa có tiêu đề" %></div>
+                    <div class="company"><%= detail.getCompanyName() != null ? detail.getCompanyName() : "Công ty chưa xác định" %></div>
+                    <div class="location"><%= detail.getProvince() != null ? detail.getProvince() : "Chưa xác định địa điểm" %></div>
+                    <div class="salary"><%= detail.getSalary() != null ? detail.getSalary() : "Chưa xác định lương" %></div>
+                    <div class="url"><a href="jobView?id=<%= detail.getId() %>">Xem việc làm</a></div>
                     <div class="actions">
-                        <a href="editJob?id=<%= detail.getId() %>" class="edit-btn">Edit</a>
+                        <a href="editJob?id=<%= detail.getId() %>" class="edit-btn">Chỉnh sửa</a>
                         <form method="post" action="deleteJob" style="display: inline;">
                             <input type="hidden" name="id" value="<%= detail.getId() %>">
-                            <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this job?')">Delete</button>
+                            <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa công việc này?')">Xóa</button>
                         </form>
                     </div>
                 </div>

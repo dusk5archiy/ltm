@@ -3,8 +3,10 @@ package app.controller;
 import jakarta.servlet.annotation.WebServlet;
 
 import app.model.bean.JobDetail;
+import app.model.bean.ScrapeJob;
 import app.model.bean.User;
 import app.model.bo.JobDetailBo;
+import app.model.bo.ScrapeJobBo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class EditJobServlet extends HttpServlet {
 
     private final JobDetailBo jobDetailBo = new JobDetailBo();
+    private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
     private final Gson gson = new Gson();
 
     @Override
@@ -42,6 +45,13 @@ public class EditJobServlet extends HttpServlet {
         JobDetail jobDetail = jobDetailBo.findById(id);
         if (jobDetail == null) {
             resp.sendRedirect("myJobs");
+            return;
+        }
+
+        // Check ownership
+        ScrapeJob scrapeJob = scrapeJobBo.findById(jobDetail.getScrapeJobId());
+        if (scrapeJob == null || (scrapeJob.getUserId() != user.getId() && !"admin".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }
 
@@ -93,6 +103,13 @@ public class EditJobServlet extends HttpServlet {
         JobDetail jobDetail = jobDetailBo.findById(id);
         if (jobDetail == null) {
             resp.sendRedirect("myJobs");
+            return;
+        }
+
+        // Check ownership
+        ScrapeJob scrapeJob = scrapeJobBo.findById(jobDetail.getScrapeJobId());
+        if (scrapeJob == null || (scrapeJob.getUserId() != user.getId() && !"admin".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }
 

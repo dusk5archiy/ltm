@@ -1,11 +1,11 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <%@ page import="app.model.bean.User" %>
 <%@ page import="app.model.bo.JobDetailBo" %>
 <html>
 <head>
-    <title>Home - Job Listings</title>
+    <title>Trang chủ - Danh sách việc làm</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
         nav { margin-bottom: 20px; background-color: #fff; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -27,7 +27,7 @@
     <nav>
         <%@ include file="navbar.jsp" %>
     </nav>
-    <h1>Job Listings</h1>
+    <h1>Danh sách việc làm</h1>
     <table>
         <%
             JobDetailBo jobDetailBo = new JobDetailBo();
@@ -42,11 +42,11 @@
             %>
             <td>
                 <div class="job-card">
-                    <div class="job-title"><%= detail.getJobTitle() != null ? detail.getJobTitle() : "Untitled Job" %></div>
-                    <div class="company"><%= detail.getCompanyName() != null ? detail.getCompanyName() : "Unknown Company" %></div>
-                    <div class="location"><%= detail.getProvince() != null ? detail.getProvince() : "Location not specified" %></div>
-                    <div class="salary"><%= detail.getSalary() != null ? detail.getSalary() : "Salary not specified" %></div>
-                    <div class="url"><a href="jobView?id=<%= detail.getId() %>">View Job</a></div>
+                    <div class="job-title"><%= detail.getJobTitle() != null ? detail.getJobTitle() : "Việc làm chưa có tiêu đề" %></div>
+                    <div class="company"><%= detail.getCompanyName() != null ? detail.getCompanyName() : "Công ty chưa xác định" %></div>
+                    <div class="location"><%= detail.getProvince() != null ? detail.getProvince() : "Chưa xác định địa điểm" %></div>
+                    <div class="salary"><%= detail.getSalary() != null ? detail.getSalary() : "Chưa xác định lương" %></div>
+                    <div class="url"><a href="jobView?id=<%= detail.getId() %>">Xem việc làm</a></div>
                 </div>
             </td>
             <% } %>

@@ -32,11 +32,20 @@ public class MyJobsServlet extends HttpServlet {
             return;
         }
 
-        // Get user's completed scrape jobs
-        List<ScrapeJob> userJobs = scrapeJobBo.findByUserId(user.getId());
-        List<ScrapeJob> completedJobs = userJobs.stream()
-            .filter(job -> "completed".equals(job.getStatus()))
-            .collect(java.util.stream.Collectors.toList());
+        List<ScrapeJob> completedJobs;
+        if ("admin".equals(user.getRole())) {
+            // Admins see all completed jobs
+            List<ScrapeJob> allJobs = scrapeJobBo.findAll();
+            completedJobs = allJobs.stream()
+                .filter(job -> "completed".equals(job.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        } else {
+            // Regular users see only their own jobs
+            List<ScrapeJob> userJobs = scrapeJobBo.findByUserId(user.getId());
+            completedJobs = userJobs.stream()
+                .filter(job -> "completed".equals(job.getStatus()))
+                .collect(java.util.stream.Collectors.toList());
+        }
 
         // Get all job details for completed jobs
         List<JobDetail> jobDetails = new ArrayList<>();

@@ -1,10 +1,10 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="app.model.bean.ScrapeJob" %>
 <%@ page import="app.model.bean.User" %>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Bảng điều khiển</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         nav { margin-bottom: 20px; background-color: #f0f0f0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -19,17 +19,17 @@
     <nav>
         <%@ include file="navbar.jsp" %>
     </nav>
-    <h1>Dashboard</h1>
-    <p>Welcome, <%= ((app.model.bean.User) session.getAttribute("user")).getUsername() %>!</p>
-    <a href="createJob">Create New Scrape Job</a>
-    <h2>Your Scrape Jobs</h2>
+    <h1>Bảng điều khiển</h1>
+    <p>Chào mừng, <%= ((app.model.bean.User) session.getAttribute("user")).getUsername() %>!</p>
+    <a href="createJob">Tạo công việc thu thập mới</a>
+    <h2>Công việc thu thập của bạn</h2>
     <table border="1">
         <tr>
             <th>ID</th>
-            <th>Status</th>
-            <th>Created At</th>
-            <th>Progress</th>
-            <th>Actions</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th>Tiến độ</th>
+            <th>Hành động</th>
         </tr>
         <%
             List<ScrapeJob> jobs = (List<ScrapeJob>) request.getAttribute("jobs");
@@ -43,7 +43,7 @@
                 <progress id="progress-<%= job.getId() %>" value="<%= job.getScrapedCount() %>" max="<%= job.getTotalPages() %>"></progress>
                 <span id="progress-text-<%= job.getId() %>"><%= job.getScrapedCount() %>/<%= job.getTotalPages() %></span>
             </td>
-            <td><a href="jobDetails?id=<%= job.getId() %>">View Details</a></td>
+            <td><a href="jobDetails?id=<%= job.getId() %>">Xem chi tiết</a></td>
         </tr>
         <% } %>
     </table>

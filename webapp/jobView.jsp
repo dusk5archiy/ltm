@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="app.model.bean.JobDetail" %>
 <%@ page import="app.model.bean.User" %>
 <%@ page import="com.google.gson.Gson" %>
@@ -9,7 +9,7 @@
 <%@ page import="java.util.HashMap" %>
 <html>
 <head>
-    <title>Job Details</title>
+    <title>Chi tiết công việc</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
         nav { margin-bottom: 20px; background-color: #fff; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -98,9 +98,9 @@
     <div class="job-container">
         <div class="job-main">
             <h3><%= detail.getJobTitle() %></h3>
-            <p><strong>Company:</strong> <a href="<%= detail.getCompanyUrl() %>" target="_blank"><%= detail.getCompanyName() %></a></p>
-            <p><strong>Province:</strong> <%= detail.getProvince() %></p>
-            <p><strong>Salary:</strong> <%= detail.getSalary() %></p>
+            <p><strong>Công ty:</strong> <a href="<%= detail.getCompanyUrl() %>" target="_blank"><%= detail.getCompanyName() %></a></p>
+            <p><strong>Tỉnh:</strong> <%= detail.getProvince() %></p>
+            <p><strong>Lương:</strong> <%= detail.getSalary() %></p>
             <p><strong>URL:</strong> <a href="<%= detail.getUrl() %>" target="_blank"><%= detail.getUrl() %></a></p>
             <% if (detail.getThumbnail() != null && !detail.getThumbnail().isEmpty()) { %>
                 <img src="<%= detail.getThumbnail() %>" alt="Thumbnail" style="max-width:200px;">
@@ -114,7 +114,7 @@
             </div>
             <% } %>
             <div>
-                <strong>Skills:</strong>
+                <strong>Kỹ năng:</strong>
                 <% for (String skill : skills) { %>
                     <span class="skill-tag"><%= skill %></span>
                 <% } %>
@@ -122,17 +122,17 @@
         </div>
         <div class="job-info">
             <% if (!jobInfo.isEmpty()) { %>
-            <h4>Job Info</h4>
+            <h4>Thông tin công việc</h4>
             <% for (Map.Entry<String, String> entry : jobInfo.entrySet()) { %>
                 <p><strong><%= entry.getKey() %>:</strong> <%= entry.getValue() %></p>
             <% } %>
             <% } %>
-            <p><strong>Collected At:</strong> <%= detail.getCollectedAt() %></p>
+            <p><strong>Ngày thu thập:</strong> <%= detail.getCollectedAt() %></p>
         </div>
     </div>
-    <a href="/" class="back-link">Back to Home</a>
+    <a href="/" class="back-link">Quay lại trang chủ</a>
     <% } else { %>
-    <p>Job not found.</p>
+    <p>Không tìm thấy công việc.</p>
     <% } %>
 </body>
 </html>

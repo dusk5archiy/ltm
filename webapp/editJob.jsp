@@ -1,10 +1,10 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <html>
 <head>
-    <title>Edit Job</title>
+    <title>Chỉnh sửa việc làm</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
         nav { margin-bottom: 20px; background-color: #fff; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
@@ -31,7 +31,7 @@
         <%@ include file="navbar.jsp" %>
     </nav>
     <div class="form-container">
-        <h1>Edit Job</h1>
+        <h1>Chỉnh sửa việc làm</h1>
         <%
             JobDetail jobDetail = (JobDetail) request.getAttribute("jobDetail");
             List<String> skills = (List<String>) request.getAttribute("skills");
@@ -42,22 +42,22 @@
             <input type="hidden" name="id" value="<%= jobDetail.getId() %>">
 
             <div class="form-group">
-                <label>Job Title:</label>
+                <label>Tiêu đề công việc:</label>
                 <input type="text" name="jobTitle" value="<%= jobDetail.getJobTitle() != null ? jobDetail.getJobTitle() : "" %>">
             </div>
 
             <div class="form-group">
-                <label>Company Name:</label>
+                <label>Tên công ty:</label>
                 <input type="text" name="companyName" value="<%= jobDetail.getCompanyName() != null ? jobDetail.getCompanyName() : "" %>">
             </div>
 
             <div class="form-group">
-                <label>Province:</label>
+                <label>Tỉnh:</label>
                 <input type="text" name="province" value="<%= jobDetail.getProvince() != null ? jobDetail.getProvince() : "" %>">
             </div>
 
             <div class="form-group">
-                <label>Salary:</label>
+                <label>Lương:</label>
                 <input type="text" name="salary" value="<%= jobDetail.getSalary() != null ? jobDetail.getSalary() : "" %>">
             </div>
 
@@ -67,17 +67,17 @@
             </div>
 
             <div class="form-group">
-                <label>Company URL:</label>
+                <label>URL công ty:</label>
                 <input type="text" name="companyUrl" value="<%= jobDetail.getCompanyUrl() != null ? jobDetail.getCompanyUrl() : "" %>">
             </div>
 
             <div class="form-group">
-                <label>Thumbnail:</label>
+                <label>Hình ảnh thu nhỏ:</label>
                 <input type="text" name="thumbnail" value="<%= jobDetail.getThumbnail() != null ? jobDetail.getThumbnail() : "" %>">
             </div>
 
             <div class="form-group">
-                <label>Skills (one per line):</label>
+                <label>Kỹ năng (mỗi dòng một kỹ năng):</label>
                 <textarea name="skills" rows="5"><%
                     if (skills != null) {
                         for (String skill : skills) {
@@ -88,7 +88,7 @@
             </div>
 
             <div class="form-group">
-                <label>Descriptions:</label>
+                <label>Mô tả:</label>
                 <div id="descriptions" class="vertical-pairs">
                     <%
                         if (descriptions != null) {
@@ -96,9 +96,9 @@
                             for (Map.Entry<String, String> entry : descriptions.entrySet()) {
                     %>
                     <div class="key-value">
-                        <input type="text" name="descKeys" value="<%= entry.getKey() %>" placeholder="Key">
-                        <textarea name="descValues" rows="3" placeholder="Value"><%= entry.getValue() %></textarea>
-                        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+                        <input type="text" name="descKeys" value="<%= entry.getKey() %>" placeholder="Khóa">
+                        <textarea name="descValues" rows="3" placeholder="Giá trị"><%= entry.getValue() %></textarea>
+                        <button type="button" class="remove-btn" onclick="removeField(this)">Xóa</button>
                     </div>
                     <%
                                 i++;
@@ -106,30 +106,30 @@
                         }
                     %>
                 </div>
-                <button type="button" class="add-btn" onclick="addField('descriptions', 'descKeys', 'descValues')">Add Description</button>
+                <button type="button" class="add-btn" onclick="addField('descriptions', 'descKeys', 'descValues')">Thêm mô tả</button>
             </div>
 
             <div class="form-group">
-                <label>Job Info:</label>
+                <label>Thông tin công việc:</label>
                 <div id="jobInfo" class="horizontal-pairs">
                     <%
                         if (jobInfo != null) {
                             for (Map.Entry<String, String> entry : jobInfo.entrySet()) {
                     %>
                     <div class="key-value">
-                        <input type="text" name="infoKeys" value="<%= entry.getKey() %>" placeholder="Key">
-                        <input type="text" name="infoValues" value="<%= entry.getValue() %>" placeholder="Value">
-                        <button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>
+                        <input type="text" name="infoKeys" value="<%= entry.getKey() %>" placeholder="Khóa">
+                        <input type="text" name="infoValues" value="<%= entry.getValue() %>" placeholder="Giá trị">
+                        <button type="button" class="remove-btn" onclick="removeField(this)">Xóa</button>
                     </div>
                     <%
                             }
                         }
                     %>
                 </div>
-                <button type="button" class="add-btn" onclick="addField('jobInfo', 'infoKeys', 'infoValues')">Add Job Info</button>
+                <button type="button" class="add-btn" onclick="addField('jobInfo', 'infoKeys', 'infoValues')">Thêm thông tin công việc</button>
             </div>
 
-            <button type="submit" class="submit-btn">Save Changes</button>
+            <button type="submit" class="submit-btn">Lưu thay đổi</button>
         </form>
     </div>
 
@@ -139,9 +139,9 @@
             const div = document.createElement('div');
             div.className = 'key-value';
             if (containerId === 'descriptions') {
-                div.innerHTML = '<input type="text" name="' + keyName + '" placeholder="Key"><textarea name="' + valueName + '" rows="3" placeholder="Value"></textarea><button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>';
+                div.innerHTML = '<input type="text" name="' + keyName + '" placeholder="Khóa"><textarea name="' + valueName + '" rows="3" placeholder="Giá trị"></textarea><button type="button" class="remove-btn" onclick="removeField(this)">Xóa</button>';
             } else {
-                div.innerHTML = '<input type="text" name="' + keyName + '" placeholder="Key"><input type="text" name="' + valueName + '" placeholder="Value"><button type="button" class="remove-btn" onclick="removeField(this)">Remove</button>';
+                div.innerHTML = '<input type="text" name="' + keyName + '" placeholder="Khóa"><input type="text" name="' + valueName + '" placeholder="Giá trị"><button type="button" class="remove-btn" onclick="removeField(this)">Xóa</button>';
             }
             container.appendChild(div);
         }

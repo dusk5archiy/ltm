@@ -27,6 +27,7 @@ public class UserBo {
         User user = new User();
         user.setUsername(username);
         user.setPassword(password);
+        user.setRole("user");
         userDao.save(user);
         return true;
     }

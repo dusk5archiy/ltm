@@ -18,6 +18,7 @@ public class UserDao {
                 user.setId(rs.getInt("id"));
                 user.setUsername(rs.getString("username"));
                 user.setPassword(rs.getString("password"));
+                user.setRole(rs.getString("role"));
                 return Optional.of(user);
             }
         } catch (SQLException e) {
@@ -27,11 +28,12 @@ public class UserDao {
     }
 
     public void save(User user) {
-        String sql = "INSERT INTO user (username, password) VALUES (?, ?)";
+        String sql = "INSERT INTO user (username, password, role) VALUES (?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getUsername());
             stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getRole());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

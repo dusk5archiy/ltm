@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <%@ page import="app.model.bean.ScrapeJob" %>
@@ -11,7 +11,7 @@
 <%@ page import="java.util.HashMap" %>
 <html>
 <head>
-    <title>Job Details</title>
+    <title>Chi tiết công việc</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         nav { margin-bottom: 20px; background-color: #f0f0f0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
@@ -53,20 +53,20 @@
     <nav>
         <%@ include file="navbar.jsp" %>
     </nav>
-    <h1>Scrape Job Details</h1>
+    <h1>Chi tiết công việc thu thập</h1>
     <%
         ScrapeJob job = (ScrapeJob) request.getAttribute("job");
     %>
-    <p><strong>Job ID:</strong> <%= job.getId() %></p>
-    <p><strong>Status:</strong> <span id="jobStatus"><%= job.getStatus() %></span></p>
-    <p><strong>Created At:</strong> <%= job.getCreatedAt() %></p>
+    <p><strong>ID công việc:</strong> <%= job.getId() %></p>
+    <p><strong>Trạng thái:</strong> <span id="jobStatus"><%= job.getStatus() %></span></p>
+    <p><strong>Ngày tạo:</strong> <%= job.getCreatedAt() %></p>
     <% if ("failed".equals(job.getStatus()) && job.getErrorMessage() != null) { %>
-        <p><strong>Error:</strong> <%= job.getErrorMessage() %></p>
+        <p><strong>Lỗi:</strong> <%= job.getErrorMessage() %></p>
     <% } %>
 
-    <h2>Scraped Jobs</h2>
+    <h2>Công việc đã thu thập</h2>
     <div id="progressArea">
-        <label for="progressBar">Progress:</label>
+        <label for="progressBar">Tiến độ:</label>
         <progress id="progressBar" value="<%= job.getScrapedCount() %>" max="<%= job.getTotalPages() %>"></progress>
         <span id="progressText"><%= job.getScrapedCount() %>/<%= job.getTotalPages() %></span>
     </div>
@@ -101,9 +101,9 @@
     <div class="job-container">
         <div class="job-main">
             <h3><%= detail.getJobTitle() %></h3>
-            <p><strong>Company:</strong> <a href="<%= detail.getCompanyUrl() %>"><%= detail.getCompanyName() %></a></p>
-            <p><strong>Province:</strong> <%= detail.getProvince() %></p>
-            <p><strong>Salary:</strong> <%= detail.getSalary() %></p>
+            <p><strong>Công ty:</strong> <a href="<%= detail.getCompanyUrl() %>"><%= detail.getCompanyName() %></a></p>
+            <p><strong>Tỉnh:</strong> <%= detail.getProvince() %></p>
+            <p><strong>Lương:</strong> <%= detail.getSalary() %></p>
             <p><strong>URL:</strong> <a href="<%= detail.getUrl() %>"><%= detail.getUrl() %></a></p>
             <% if (detail.getThumbnail() != null) { %>
                 <img src="<%= detail.getThumbnail() %>" alt="Thumbnail" style="max-width:200px;">
@@ -117,7 +117,7 @@
             </div>
             <% } %>
             <div>
-                <strong>Skills:</strong>
+                <strong>Kỹ năng:</strong>
                 <% for (String skill : skills) { %>
                     <span class="skill-tag"><%= skill %></span>
                 <% } %>
@@ -125,7 +125,7 @@
         </div>
         <div class="job-info">
             <% if (!jobInfo.isEmpty()) { %>
-            <h4>Job Info</h4>
+            <h4>Thông tin công việc</h4>
             <% for (Map.Entry<String, String> entry : jobInfo.entrySet()) { %>
                 <p><strong><%= entry.getKey() %>:</strong> <%= entry.getValue() %></p>
             <% } %>
@@ -133,7 +133,7 @@
         </div>
     </div>
     <% } %>
-    <a href="dashboard">Back to Dashboard</a>
+    <a href="dashboard">Quay lại bảng điều khiển</a>
     <script>
         (function() {
             const jobId = '<%= job.getId() %>';

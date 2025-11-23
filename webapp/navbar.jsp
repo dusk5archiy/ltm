@@ -1,11 +1,19 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="app.model.bean.User" %>
 <div class="nav-left">
-    <a href="/">Home</a>
+    <a href="/">Trang chủ</a>
     <%
         User user = (User) session.getAttribute("user");
         if (user != null) {
     %>
-    | <a href="dashboard">Dashboard</a> | <a href="myJobs">My Jobs</a>
+    | <a href="dashboard">Bảng điều khiển</a> | <a href="myJobs">Việc của tôi</a>
+    <%
+        if ("admin".equals(user.getRole())) {
+    %>
+    | <a href="statistics">Thống kê</a>
+    <%
+        }
+    %>
     <%
         }
     %>
@@ -14,11 +22,11 @@
     <%
         if (user != null) {
     %>
-    Welcome, <%= user.getUsername() %> | <a href="logout">Sign Out</a>
+    Chào mừng, <%= user.getUsername() %> | <a href="logout">Đăng xuất</a>
     <%
         } else {
     %>
-    <a href="login">Login</a>
+    <a href="login">Đăng nhập</a>
     <%
         }
     %>

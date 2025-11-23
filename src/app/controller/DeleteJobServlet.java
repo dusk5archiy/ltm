@@ -3,8 +3,10 @@ package app.controller;
 import jakarta.servlet.annotation.WebServlet;
 
 import app.model.bean.JobDetail;
+import app.model.bean.ScrapeJob;
 import app.model.bean.User;
 import app.model.bo.JobDetailBo;
+import app.model.bo.ScrapeJobBo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +19,7 @@ import java.io.IOException;
 public class DeleteJobServlet extends HttpServlet {
 
     private final JobDetailBo jobDetailBo = new JobDetailBo();
+    private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,12 +37,20 @@ public class DeleteJobServlet extends HttpServlet {
         }
 
         int id = Integer.parseInt(idParam);
-        // Note: We don't check if the job belongs to the user, assuming users can only delete their own jobs
-        // In a real app, you'd verify ownership
+        JobDetail jobDetail = jobDetailBo.findById(id);
+        if (jobDetail == null) {
+            resp.sendRedirect("myJobs");
+            return;
+        }
 
-        // For now, just delete the JobDetail
-        // In the future, you might want to soft delete or check ownership
-        jobDetailBo.delete(id); // Need to add delete method to BO and DAO
+        // Check ownership
+        ScrapeJob scrapeJob = scrapeJobBo.findById(jobDetail.getScrapeJobId());
+        if (scrapeJob == null || (scrapeJob.getUserId() != user.getId() && !"admin".equals(user.getRole()))) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied");
+            return;
+        }
+
+        jobDetailBo.delete(id);
 
         resp.sendRedirect("myJobs");
     }
