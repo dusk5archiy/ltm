@@ -39,4 +39,8 @@ public class ScrapeJobBo {
     public void updateErrorMessage(int id, String msg) {
         scrapeJobDao.updateErrorMessage(id, msg);
     }
+
+    public List<ScrapeJob> findAll() {
+        return scrapeJobDao.findAll();
+    }
 }

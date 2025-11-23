@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <%@ page import="app.model.bean.ScrapeJob" %>
+<%@ page import="app.model.bean.User" %>
 <%@ page import="com.google.gson.Gson" %>
 <%@ page import="com.google.gson.reflect.TypeToken" %>
 <%@ page import="java.util.Map" %>
@@ -12,6 +13,10 @@
 <head>
     <title>Job Details</title>
     <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav { margin-bottom: 20px; background-color: #f0f0f0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-left, .nav-right { display: flex; align-items: center; }
+        .nav-left a, .nav-right a { margin: 0 10px; }
         .job-container {
             display: flex;
             border: 1px solid #ccc;
@@ -45,6 +50,9 @@
     </style>
 </head>
 <body>
+    <nav>
+        <%@ include file="navbar.jsp" %>
+    </nav>
     <h1>Scrape Job Details</h1>
     <%
         ScrapeJob job = (ScrapeJob) request.getAttribute("job");

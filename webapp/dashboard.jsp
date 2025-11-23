@@ -5,8 +5,20 @@
 <html>
 <head>
     <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav { margin-bottom: 20px; background-color: #f0f0f0; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-left, .nav-right { display: flex; align-items: center; }
+        .nav-left a, .nav-right a { margin: 0 10px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
 </head>
 <body>
+    <nav>
+        <%@ include file="navbar.jsp" %>
+    </nav>
     <h1>Dashboard</h1>
     <p>Welcome, <%= ((app.model.bean.User) session.getAttribute("user")).getUsername() %>!</p>
     <a href="createJob">Create New Scrape Job</a>
@@ -35,7 +47,6 @@
         </tr>
         <% } %>
     </table>
-    <a href="logout">Logout</a>
     <%
         StringBuilder _jobIdsBuilder = new StringBuilder();
         for (ScrapeJob job : jobs) {

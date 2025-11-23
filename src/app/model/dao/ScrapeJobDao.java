@@ -135,4 +135,28 @@ public class ScrapeJobDao {
             e.printStackTrace();
         }
     }
+
+    public List<ScrapeJob> findAll() {
+        List<ScrapeJob> jobs = new ArrayList<>();
+        String sql = "SELECT * FROM scrape_job ORDER BY created_at DESC";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ScrapeJob job = new ScrapeJob();
+                job.setId(rs.getInt("id"));
+                job.setUserId(rs.getInt("user_id"));
+                job.setStatus(rs.getString("status"));
+                job.setCreatedAt(rs.getTimestamp("created_at"));
+                job.setUpdatedAt(rs.getTimestamp("updated_at"));
+                job.setErrorMessage(rs.getString("error_message"));
+                job.setTotalPages(rs.getInt("total_pages"));
+                job.setScrapedCount(rs.getInt("scraped_count"));
+                jobs.add(job);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return jobs;
+    }
 }

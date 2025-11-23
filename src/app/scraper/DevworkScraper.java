@@ -163,6 +163,7 @@ public class DevworkScraper {
     }
 
     private String removeConsecutiveSpaces(String text) {
-        return text.replaceAll("\\s+", " ").trim();
+        // return text.replaceAll("\\s+", " ").trim();
+        return text;
     }
 }
