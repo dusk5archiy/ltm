@@ -57,30 +57,36 @@
     <script>
         (function() {
             function fetchProgress(jobId) {
-                fetch('progress?id=' + jobId)
+                fetch('progress?id=' + jobId, { credentials: 'same-origin', cache: 'no-cache' })
                     .then(res => res.json())
                     .then(data => {
                         const progress = document.getElementById('progress-' + jobId);
                         const text = document.getElementById('progress-text-' + jobId);
                         if (progress) {
-                            progress.max = data.totalPages || 1;
-                            progress.value = data.scrapedCount || 0;
+                            const newProgress = document.createElement('progress');
+                            newProgress.id = 'progress-' + jobId;
+                            newProgress.max = data.totalPages || 1;
+                            newProgress.value = data.scrapedCount || 0;
+                            progress.parentNode.replaceChild(newProgress, progress);
                         }
                         if (text) {
-                            text.textContent = (data.scrapedCount || 0) + '/' + (data.totalPages || 0);
+                            const newText = document.createElement('span');
+                            newText.id = 'progress-text-' + jobId;
+                            newText.textContent = (data.scrapedCount || 0) + '/' + (data.totalPages || 0);
+                            text.parentNode.replaceChild(newText, text);
                         }
                     }).catch(err => console.error('Progress fetch failed for', jobId, err));
             }
 
             function pollAll() {
-                const elems = document.querySelectorAll('[id^="progress-"]');
+                const elems = document.querySelectorAll('progress[id^="progress-"]');
                 elems.forEach(el => {
                     const id = el.id.split('-')[1];
                     fetchProgress(id);
                 });
             }
 
-            setInterval(pollAll, 5000);
+            setInterval(pollAll, 1000);
             pollAll();
         })();
     </script>

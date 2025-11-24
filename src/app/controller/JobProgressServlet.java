@@ -54,6 +54,7 @@ public class JobProgressServlet extends HttpServlet {
     out.put("scrapedCount", job.getScrapedCount());
     out.put("totalPages", job.getTotalPages());
 
+    resp.setHeader("Cache-Control", "no-cache");
     resp.setContentType("application/json");
     resp.getWriter().write(gson.toJson(out));
   }

@@ -166,7 +166,7 @@
                 };
             } else {
                 function fetchProgress() {
-                    fetch('progress?id=' + jobId)
+                    fetch('progress?id=' + jobId, { credentials: 'same-origin', cache: 'no-cache' })
                         .then(res => {
                             if (!res.ok) throw new Error('Network error');
                             return res.json();
