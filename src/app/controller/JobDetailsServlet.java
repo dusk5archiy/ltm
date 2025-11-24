@@ -1,3 +1,5 @@
+// Trang chi tiết việc làm
+
 package app.controller;
 
 import jakarta.servlet.annotation.WebServlet;
@@ -19,34 +21,34 @@ import java.util.List;
 @WebServlet(urlPatterns = "/jobDetails")
 public class JobDetailsServlet extends HttpServlet {
 
-    private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
-    private final JobDetailBo jobDetailBo = new JobDetailBo();
+  private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
+  private final JobDetailBo jobDetailBo = new JobDetailBo();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login");
-            return;
-        }
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    HttpSession session = req.getSession();
+    User user = (User) session.getAttribute("user");
+    if (user == null) {
+      resp.sendRedirect("login");
+      return;
+    }
 
-        String jobIdParam = req.getParameter("id");
-        if (jobIdParam == null) {
-            resp.sendRedirect("dashboard");
-            return;
-        }
+    String jobIdParam = req.getParameter("id");
+    if (jobIdParam == null) {
+      resp.sendRedirect("dashboard");
+      return;
+    }
 
-        int jobId = Integer.parseInt(jobIdParam);
+    int jobId = Integer.parseInt(jobIdParam);
     ScrapeJob job = scrapeJobBo.findById(jobId);
-        if (job == null || job.getUserId() != user.getId()) {
-            resp.sendRedirect("dashboard");
-            return;
-        }
+    if (job == null || job.getUserId() != user.getId()) {
+      resp.sendRedirect("dashboard");
+      return;
+    }
 
     List<JobDetail> details = jobDetailBo.findByScrapeJobId(jobId);
-        req.setAttribute("job", job);
-        req.setAttribute("details", details);
-        req.getRequestDispatcher("/jobDetails.jsp").forward(req, resp);
-    }
+    req.setAttribute("job", job);
+    req.setAttribute("details", details);
+    req.getRequestDispatcher("/jobDetails.jsp").forward(req, resp);
+  }
 }

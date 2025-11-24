@@ -17,19 +17,19 @@ import java.util.List;
 @WebServlet(urlPatterns = "/dashboard")
 public class DashboardServlet extends HttpServlet {
 
-    private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
+  private final ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            resp.sendRedirect("login");
-            return;
-        }
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    HttpSession session = req.getSession();
+    User user = (User) session.getAttribute("user");
+    if (user == null) {
+      resp.sendRedirect("login");
+      return;
+    }
 
     List<ScrapeJob> jobs = scrapeJobBo.findByUserId(user.getId());
-        req.setAttribute("jobs", jobs);
-        req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
-    }
+    req.setAttribute("jobs", jobs);
+    req.getRequestDispatcher("/dashboard.jsp").forward(req, resp);
+  }
 }

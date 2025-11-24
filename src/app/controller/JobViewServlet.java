@@ -14,24 +14,24 @@ import java.io.IOException;
 @WebServlet(urlPatterns = "/jobView")
 public class JobViewServlet extends HttpServlet {
 
-    private final JobDetailBo jobDetailBo = new JobDetailBo();
+  private final JobDetailBo jobDetailBo = new JobDetailBo();
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String idParam = req.getParameter("id");
-        if (idParam == null) {
-            resp.sendRedirect("/");
-            return;
-        }
-
-        int id = Integer.parseInt(idParam);
-        JobDetail jobDetail = jobDetailBo.findById(id);
-        if (jobDetail == null) {
-            resp.sendRedirect("/");
-            return;
-        }
-
-        req.setAttribute("jobDetail", jobDetail);
-        req.getRequestDispatcher("/jobView.jsp").forward(req, resp);
+  @Override
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    String idParam = req.getParameter("id");
+    if (idParam == null) {
+      resp.sendRedirect("/");
+      return;
     }
+
+    int id = Integer.parseInt(idParam);
+    JobDetail jobDetail = jobDetailBo.findById(id);
+    if (jobDetail == null) {
+      resp.sendRedirect("/");
+      return;
+    }
+
+    req.setAttribute("jobDetail", jobDetail);
+    req.getRequestDispatcher("/jobView.jsp").forward(req, resp);
+  }
 }
