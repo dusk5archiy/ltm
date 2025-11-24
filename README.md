@@ -1,197 +1,317 @@
-# Devwork Job Scraper
+# Ứng dụng Thu thập Việc làm Devwork
 
-A full-stack Java Servlet application that scrapes job listings from Devwork.vn, stores them in MySQL, and provides a web interface for users to manage scraping jobs.
+Một ứng dụng Java Servlet full-stack thu thập thông tin việc làm từ Devwork.vn, lưu trữ trong MySQL và cung cấp giao diện web để người dùng quản lý các công việc thu thập dữ liệu.
 
-## Features
+## Tính năng
 
-- User authentication (login/register)
-- Dashboard to view scraping job history
-- Create new scraping jobs with multiple URLs
-- Queue-based job processing with background scraping
-- Display scraped job details with skills, descriptions, and company info
-- Responsive web interface with clean job detail views
+- Xác thực người dùng (đăng nhập/đăng ký/đăng xuất)
+- Bảng điều khiển để xem lịch sử công việc thu thập
+- Quản lý công việc cá nhân (xem, tạo, chỉnh sửa, xóa công việc thu thập)
+- Tạo công việc thu thập mới với nhiều URL
+- Xử lý công việc theo hàng đợi với việc thu thập nền
+- Theo dõi tiến độ công việc thu thập theo thời gian thực (SSE)
+- Hiển thị chi tiết công việc đã thu thập với kỹ năng, mô tả và thông tin công ty
+- Thống kê quản trị (cho người dùng admin)
+- Giao diện web đáp ứng với chế độ xem chi tiết công việc rõ ràng
+- Hỗ trợ đa ngôn ngữ (tiếng Việt) với mã hóa UTF-8
 
-## Architecture
+## Kiến trúc
 
-This application follows the MVC (Model-View-Controller) architecture:
+Ứng dụng này tuân theo kiến trúc MVC (Model-View-Controller). Dưới đây là các sơ đồ kiến trúc chi tiết cho từng chức năng chính:
+
+### 1. Luồng Xác thực (Authentication Flow)
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "basis"}}}%%
 graph TD
-    subgraph "Presentation Layer"
-        V1[login.jsp]
-        V2[dashboard.jsp]
-        V3[jobDetails.jsp]
-        V4[createJob.jsp]
+    subgraph "Views"
+        V2[login.jsp]
+        V3[register.jsp]
     end
 
-    subgraph "Controller Layer"
+    subgraph "Controllers"
         C1[LoginServlet]
-        C2[DashboardServlet]
-        C3[JobDetailsServlet]
-        C4[CreateJobServlet]
+        C2[LogoutServlet]
     end
 
-    subgraph "Model Layer"
-        M1[UserDao]
-        M2[ScrapeJobDao]
-        M3[JobDetailDao]
+    subgraph "Models"
+        M1[User]
+        M4[UserDao]
+    end
+
+    subgraph "Database"
+        DB1[(user)]
+    end
+
+    V2 --> C1
+    V3 --> C1
+    C1 --> M4
+    C2 --> M4
+    M4 --> DB1
+```
+
+### 2. Luồng Quản lý Công việc (Job Management Flow)
+
+```mermaid
+%%{init: {"flowchart": {"curve": "basis"}}}%%
+graph TD
+    subgraph "Views"
+        V4[dashboard.jsp]
+        V5[myJobs.jsp]
+        V6[createJob.jsp]
+        V7[editJob.jsp]
+        V8[jobDetails.jsp]
+        V9[jobView.jsp]
+    end
+
+    subgraph "Controllers"
+        C3[DashboardServlet]
+        C4[MyJobsServlet]
+        C5[CreateJobServlet]
+        C6[EditJobServlet]
+        C7[DeleteJobServlet]
+        C8[JobDetailsServlet]
+        C9[JobViewServlet]
+    end
+
+    subgraph "Models"
+        M2[ScrapeJob]
+        M5[ScrapeJobDao]
     end
 
     subgraph "Business Logic"
-        S1[DevworkScraper]
-        S2[ScrapeManager]
         P1[JobProcessor]
-        T1[ScrapeTask]
     end
 
-    subgraph "Data Layer"
-        DB[(MySQL Database)]
-        DB1[user table]
-        DB2[scrape_job table]
-        DB3[job_detail table]
+    subgraph "Database"
+        DB2[(scrape_job)]
     end
 
-    V1 --> C1
-    V2 --> C2
-    V3 --> C3
-    V4 --> C4
+    V4 --> C3
+    V5 --> C4
+    V6 --> C5
+    V7 --> C6
+    V8 --> C8
+    V9 --> C9
 
-    C1 --> M1
-    C2 --> M2
-    C3 --> M3
-    C4 --> M2
+    C3 --> M5
+    C4 --> M5
+    C5 --> M5
+    C6 --> M5
+    C7 --> M5
+    C8 --> M5
+    C9 --> M5
 
-    C4 --> P1
-    P1 --> S2
-    S2 --> S1
-    P1 --> T1
+    C5 --> P1
+    C6 --> P1
 
-    M1 --> DB
-    M2 --> DB
-    M3 --> DB
-
-    DB --> DB1
-    DB --> DB2
-    DB --> DB3
+    M5 --> DB2
 ```
 
-### Components
+### 3. Luồng Xử lý Công việc (Job Processing Flow)
 
-- **Model**: Java classes representing data (User, ScrapeJob, JobDetail) and DAOs for database operations
-- **View**: JSP pages for the user interface
-- **Controller**: Servlets handling HTTP requests and responses
-- **Scraper**: Jsoup-based web scraper for Devwork.vn
-- **Job Processor**: Background queue system for processing scraping tasks
-- **Database**: MySQL with UTF-8 encoding for storing users, jobs, and scraped data
+```mermaid
+%%{init: {"flowchart": {"curve": "basis"}}}%%
+graph TD
+    subgraph "Controllers"
+        C5[CreateJobServlet]
+        C6[EditJobServlet]
+        C10[JobProgressServlet]
+    end
 
-## Prerequisites
+    subgraph "Business Logic"
+        P1[JobProcessor]
+        T1[ScrapeTask]
+        PB1[ProgressBroadcaster]
+        S1[DevworkScraper]
+        S2[ScrapeManager]
+    end
 
-- Java JDK 11 or higher
+    C5 --> P1
+    C6 --> P1
+    C10 --> PB1
+
+    P1 --> T1
+    P1 --> PB1
+    P1 --> S2
+    S2 --> S1
+```
+
+### 4. Luồng Truy cập Dữ liệu (Data Access Flow)
+
+```mermaid
+%%{init: {"flowchart": {"curve": "basis"}}}%%
+graph TD
+    subgraph "Models"
+        M1[User]
+        M2[ScrapeJob]
+        M3[JobDetail]
+        M4[UserDao]
+        M5[ScrapeJobDao]
+        M6[JobDetailDao]
+        M7[DBUtil]
+    end
+
+    subgraph "Database"
+        DB1[(user)]
+        DB2[(scrape_job)]
+        DB3[(job_detail)]
+    end
+
+    M4 --> DB1
+    M5 --> DB2
+    M6 --> DB3
+```
+
+### 5. Luồng Tính năng Admin (Admin Features Flow)
+
+```mermaid
+%%{init: {"flowchart": {"curve": "basis"}}}%%
+graph TD
+    subgraph "Views"
+        V10[statistics.jsp]
+    end
+
+    subgraph "Controllers"
+        C11[StatisticsServlet]
+    end
+
+    subgraph "Models"
+        M1[User]
+        M2[ScrapeJob]
+        M4[UserDao]
+        M5[ScrapeJobDao]
+    end
+
+    subgraph "Database"
+        DB1[(user)]
+        DB2[(scrape_job)]
+    end
+
+    V10 --> C11
+    C11 --> M4
+    C11 --> M5
+    M4 --> DB1
+    M5 --> DB2
+```
+
+### Các thành phần
+
+- **Model**: Các lớp Java đại diện cho dữ liệu (User, ScrapeJob, JobDetail) và DAO để thao tác cơ sở dữ liệu (UserDao, ScrapeJobDao, JobDetailDao)
+- **View**: Các trang JSP cho giao diện người dùng (index.jsp, login.jsp, register.jsp, dashboard.jsp, myJobs.jsp, createJob.jsp, editJob.jsp, jobDetails.jsp, jobView.jsp, statistics.jsp)
+- **Controller**: Các Servlet xử lý yêu cầu và phản hồi HTTP (LoginServlet, DashboardServlet, MyJobsServlet, CreateJobServlet, EditJobServlet, DeleteJobServlet, JobDetailsServlet, StatisticsServlet, v.v.)
+- **Scraper**: Bộ thu thập web dựa trên Jsoup cho Devwork.vn (DevworkScraper, ScrapeManager)
+- **Job Processor**: Hệ thống hàng đợi nền để xử lý các tác vụ thu thập (JobProcessor, ScrapeTask, ProgressBroadcaster)
+- **Database**: MySQL với mã hóa UTF-8 để lưu trữ người dùng, công việc và dữ liệu đã thu thập (user, scrape_job, job_detail)
+
+## Yêu cầu tiên quyết
+
+- Java JDK 11 hoặc cao hơn
 - Apache Maven 3.6+
 - Apache Tomcat 9+ (Windows)
-- MySQL 8.0+ (via XAMPP)
-- Windows operating system
+- MySQL 8.0+ (qua XAMPP)
+- Hệ điều hành Windows
 
-## Installation and Deployment
+## Cài đặt và Triển khai
 
-### 1. Install Java JDK
+### 1. Cài đặt Java JDK
 
-1. Download JDK from [Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) or [AdoptOpenJDK](https://adoptopenjdk.net/)
-2. Install to default location (e.g., `C:\Program Files\Java\jdk-11.x.x`)
-3. Set environment variables:
-   - `JAVA_HOME = C:\Program Files\Java\jdk-11.x.x`
-   - Add `%JAVA_HOME%\bin` to PATH
+1. Tải JDK từ [Oracle](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html).
+2. Cài đặt vào vị trí mặc định (ví dụ: `C:\Program Files\Java\jdk-11.x.x`)
+3. Thêm `%JAVA_HOME%\bin` vào PATH (JAVA_HOME là tùy chọn nhưng được khuyến nghị cho một số công cụ phát triển)
 
-### 2. Install Apache Maven
+### 2. Cài đặt Apache Maven
 
-1. Download Maven from [maven.apache.org](https://maven.apache.org/download.cgi)
-2. Extract to `C:\Program Files\Apache\maven-3.x.x`
-3. Set environment variables:
-   - `MAVEN_HOME = C:\Program Files\Apache\maven-3.x.x`
-   - Add `%MAVEN_HOME%\bin` to PATH
-4. Verify: Open command prompt and run `mvn -version`
+1. Tải Maven từ [maven.apache.org](https://maven.apache.org/download.cgi)
+2. Giải nén vào `C:\Program Files\Apache\maven-3.x.x`
+3. Thêm `%MAVEN_HOME%\bin` vào PATH (MAVEN_HOME là tùy chọn nhưng được khuyến nghị cho một số công cụ phát triển)
+4. Xác minh: Mở command prompt và chạy `mvn -version`
 
-### 3. Install XAMPP (MySQL)
+### 3. Cài đặt XAMPP (MySQL)
 
-1. Download XAMPP from [apachefriends.org](https://www.apachefriends.org/download.html)
-2. Install to default location (usually `C:\xampp`)
-3. Start XAMPP Control Panel
-4. Start MySQL service
-5. Open phpMyAdmin (<http://localhost/phpmyadmin>)
-6. Create database: `ltm` with collation `utf8mb4_vietnamese_ci`
+1. Tải XAMPP từ [apachefriends.org](https://www.apachefriends.org/download.html)
+2. Cài đặt vào vị trí mặc định (thường là `C:\xampp`)
+3. Khởi động XAMPP Control Panel
+4. Khởi động dịch vụ MySQL
+5. Mở phpMyAdmin (<http://localhost/phpmyadmin>)
+6. Tạo cơ sở dữ liệu: `ltm` với collation `utf8mb4_vietnamese_ci`
 
-### 4. Install Apache Tomcat
+### 4. Cài đặt Apache Tomcat
 
-1. Download Tomcat 9 from [tomcat.apache.org](https://tomcat.apache.org/download-90.cgi)
-2. Extract to `C:\Program Files\Apache\Tomcat 9.x`
-3. Set environment variables:
+1. Tải Tomcat 9 từ [tomcat.apache.org](https://tomcat.apache.org/download-90.cgi)
+2. Giải nén vào `C:\Program Files\Apache\Tomcat 9.x`
+3. Thiết lập biến môi trường:
    - `CATALINA_HOME = C:\Program Files\Apache\Tomcat 9.x`
-4. Start Tomcat: Run `%CATALINA_HOME%\bin\startup.bat`
+4. Khởi động Tomcat: Chạy `%CATALINA_HOME%\bin\startup.bat`
 
-### 5. Setup Database
+### 5. Thiết lập Cơ sở dữ liệu
 
-1. In phpMyAdmin, create database `ltm` with `utf8mb4_vietnamese_ci` collation
-2. Run the SQL script from `schema.sql` in your project root
+1. Trong phpMyAdmin, tạo cơ sở dữ liệu `ltm` với collation `utf8mb4_vietnamese_ci`
+2. Chạy script SQL từ `schema.sql` trong thư mục gốc dự án
 
-### 6. Build and Deploy the Application
+### 6. Xây dựng và Triển khai Ứng dụng
 
-1. Clone or download the project
-2. Open command prompt in project root
-3. Build the project:
+1. Clone hoặc tải về dự án
+2. Mở command prompt trong thư mục gốc dự án
+3. Xây dựng dự án:
 
    ```
    mvn clean package
    ```
 
-4. Deploy the WAR file:
-   - Copy `target\app.war` to `%CATALINA_HOME%\webapps\`
-   - Or use Tomcat Manager (<http://localhost:8080/manager/html>)
-5. Access the application at: <http://localhost:8080/app/>
+4. Triển khai file WAR:
+   - Sao chép `target\app.war` vào `%CATALINA_HOME%\webapps\`
+   - Hoặc sử dụng Tomcat Manager (<http://localhost:8080/manager/html>)
+5. Truy cập ứng dụng tại: <http://localhost:8080/app/>
 
-## Usage
+## Cách sử dụng
 
-1. **Register/Login**: Create an account or login
-2. **Dashboard**: View your scraping job history
-3. **Create Job**: Enter Devwork job URLs (one per line) to scrape
-4. **View Results**: Click on completed jobs to see detailed job information
-5. **Job Details**: View job title, company, salary, skills (as tags), descriptions, and additional info
+1. **Đăng ký/Đăng nhập**: Tạo tài khoản hoặc đăng nhập vào hệ thống
+2. **Trang chủ**: Xem danh sách các công việc việc làm có sẵn
+3. **Bảng điều khiển**: Xem lịch sử công việc thu thập của bạn
+4. **Công việc của tôi**: Quản lý các công việc thu thập cá nhân (xem, chỉnh sửa, xóa)
+5. **Tạo công việc**: Nhập URL công việc Devwork (một URL mỗi dòng) để thu thập
+6. **Theo dõi tiến độ**: Xem tiến độ thu thập theo thời gian thực
+7. **Xem kết quả**: Nhấp vào các công việc đã hoàn thành để xem thông tin chi tiết
+8. **Chi tiết công việc**: Xem tiêu đề công việc, công ty, lương, kỹ năng (dưới dạng thẻ), mô tả và thông tin bổ sung
+9. **Thống kê** (Admin): Xem thống kê tổng quan về hệ thống (cho người dùng admin)
 
-## Technologies Used
+## Công nghệ được sử dụng
 
 - **Backend**: Java Servlets (Jakarta EE 6.1.0), Maven
 - **Frontend**: JSP, HTML, CSS
-- **Database**: MySQL 8.0 with UTF-8 support
+- **Database**: MySQL 8.0 với hỗ trợ UTF-8
 - **Scraping**: Jsoup 1.17.1
 - **JSON Processing**: Gson 2.10.1
 - **Web Server**: Apache Tomcat 9
 - **Development**: Java 11, Maven
 
-## Project Structure
+## Cấu trúc dự án
 
 ```
 project-root/
 ├── src/
 │   └── app/
-│       ├── dao/           # Data Access Objects
-│       ├── model/         # Data models
-│       ├── scraper/       # Web scraping logic
-│       ├── servlet/       # HTTP controllers
-│       └── util/          # Utilities (JobProcessor, etc.)
-├── webapp/                # JSP views and web resources
-├── schema.sql             # Database schema
-├── deprecated_sql/        # Deprecated SQL files (kept for reference only)
-├── pom.xml               # Maven configuration
-└── README.md             # This file
+│       ├── controller/     # Bộ điều khiển HTTP (Servlets)
+│       ├── model/
+│       │   ├── bean/       # Các lớp mô hình dữ liệu (User, ScrapeJob, JobDetail)
+│       │   ├── bo/         # Đối tượng nghiệp vụ
+│       │   └── dao/        # Đối tượng truy cập dữ liệu (UserDao, ScrapeJobDao, JobDetailDao, DBUtil)
+│       ├── scraper/        # Logic thu thập web (DevworkScraper, ScrapeManager)
+│       └── util/           # Tiện ích (JobProcessor, ScrapeTask, ProgressBroadcaster)
+├── webapp/                 # Views JSP và tài nguyên web
+│   ├── *.jsp               # Mẫu views
+│   └── WEB-INF/
+├── target/                 # Đầu ra build
+├── schema.sql              # Lược đồ cơ sở dữ liệu
+├── deprecated_sql/         # Các file SQL đã lỗi thời (giữ để tham khảo)
+├── pom.xml                 # Cấu hình Maven
+└── README.md               # File hiện tại mà bạn đang đọc
 ```
 
-## Troubleshooting
+## Khắc phục sự cố
 
-- **Port conflicts**: Ensure Tomcat (8080) and MySQL (3306) ports are free
-- **Encoding issues**: Database must use UTF-8 collation for Vietnamese text
-- **Scraping failures**: Check URLs are valid Devwork job pages
-- **Build errors**: Ensure JAVA_HOME and MAVEN_HOME are set correctly
-
-## License
-
-This project is for educational purposes.
-
+- **Xung đột cổng**: Đảm bảo các cổng Tomcat (8080) và MySQL (3306) không bị chiếm
+- **Vấn đề mã hóa**: Cơ sở dữ liệu phải sử dụng collation UTF-8 cho văn bản tiếng Việt
+- **Lỗi thu thập**: Kiểm tra URL có phải là trang công việc Devwork hợp lệ
+- **Lỗi build**: Đảm bảo Java và Maven đã được thêm vào PATH. Nếu gặp vấn đề với một số IDE hoặc công cụ, hãy thiết lập JAVA_HOME và MAVEN_HOME
