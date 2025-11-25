@@ -17,11 +17,32 @@
     <% if (request.getAttribute("error") != null) { %>
         <p style="color:red;"><%= request.getAttribute("error") %></p>
     <% } %>
-    <form action="createJob" method="post">
+    <form action="createJob" method="post" onsubmit="return validateUrls()">
         <label>URL (mỗi dòng một URL):<br>
         <textarea name="urls" rows="10" cols="50" required placeholder="https://devwork.vn/job1&#10;https://devwork.vn/job2"></textarea></label><br>
         <button type="submit">Tạo công việc</button>
     </form>
     <a href="dashboard">Quay lại bảng điều khiển</a>
+    <script>
+        function validateUrls() {
+            const textarea = document.querySelector('textarea[name="urls"]');
+            const urls = textarea.value.trim().split(/\r?\n/).filter(url => url.trim() !== '');
+            
+            for (let url of urls) {
+                url = url.trim();
+                if (!url.startsWith('https://devwork.vn/')) {
+                    alert('Chỉ chấp nhận URL từ devwork.vn. URL không hợp lệ: ' + url);
+                    return false;
+                }
+            }
+            
+            if (urls.length === 0) {
+                alert('Vui lòng nhập ít nhất một URL.');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
 </body>
 </html>

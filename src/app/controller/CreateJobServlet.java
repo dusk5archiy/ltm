@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(urlPatterns = "/createJob")
 public class CreateJobServlet extends HttpServlet {
@@ -52,7 +53,25 @@ public class CreateJobServlet extends HttpServlet {
       return;
     }
 
-    List<String> urls = Arrays.asList(urlsParam.split("\\r?\\n"));
+    List<String> urls = Arrays.asList(urlsParam.split("\\r?\\n")).stream()
+        .map(String::trim)
+        .filter(url -> !url.isEmpty())
+        .collect(Collectors.toList());
+
+    if (urls.isEmpty()) {
+      req.setAttribute("error", "Nhập ít nhất một URL hợp lệ.");
+      req.getRequestDispatcher("/createJob.jsp").forward(req, resp);
+      return;
+    }
+
+    // Validate URLs are from devwork.vn
+    for (String url : urls) {
+      if (!url.startsWith("https://devwork.vn/")) {
+        req.setAttribute("error", "Chỉ chấp nhận URL từ devwork.vn. URL không hợp lệ: " + url);
+        req.getRequestDispatcher("/createJob.jsp").forward(req, resp);
+        return;
+      }
+    }
 
     ScrapeJob job = new ScrapeJob();
     job.setUserId(user.getId());

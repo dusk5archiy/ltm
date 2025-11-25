@@ -17,9 +17,18 @@ Một ứng dụng Java Servlet full-stack thu thập thông tin việc làm t�
 
 ## Kiến trúc
 
-Ứng dụng này tuân theo kiến trúc MVC (Model-View-Controller). Dưới đây là các sơ đồ kiến trúc chi tiết cho từng chức năng chính:
+Ứng dụng này tuân theo kiến trúc MVC (Model-View-Controller) gồm có các thành phần sau:
+
+- **Model**: Các lớp Java đại diện cho dữ liệu (User, ScrapeJob, JobDetail) và DAO để thao tác cơ sở dữ liệu (UserDao, ScrapeJobDao, JobDetailDao)
+- **View**: Các trang JSP cho giao diện người dùng (index.jsp, login.jsp, register.jsp, dashboard.jsp, myJobs.jsp, createJob.jsp, editJob.jsp, jobDetails.jsp, jobView.jsp, statistics.jsp)
+- **Controller**: Các Servlet xử lý yêu cầu và phản hồi HTTP (LoginServlet, DashboardServlet, MyJobsServlet, CreateJobServlet, EditJobServlet, DeleteJobServlet, JobDetailsServlet, StatisticsServlet, v.v.)
+- **Scraper**: Bộ thu thập web dựa trên Jsoup cho Devwork.vn (DevworkScraper, ScrapeManager)
+- **Job Processor**: Hệ thống hàng đợi nền để xử lý các tác vụ thu thập (JobProcessor, ScrapeTask, ProgressBroadcaster)
+- **Database**: MySQL với mã hóa UTF-8 để lưu trữ người dùng, công việc và dữ liệu đã thu thập (user, scrape_job, job_detail)
 
 ### 1. Luồng Xác thực (Authentication Flow)
+
+Sơ đồ này minh họa luồng xác thực người dùng trong ứng dụng. Người dùng tương tác với các trang JSP (login.jsp và register.jsp) để đăng nhập hoặc đăng ký. Các yêu cầu này được xử lý bởi LoginServlet và LogoutServlet, sau đó tương tác với UserDao để truy cập cơ sở dữ liệu user để xác thực hoặc lưu trữ thông tin người dùng.
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
@@ -51,6 +60,8 @@ graph TD
 ```
 
 ### 2. Luồng Quản lý Công việc (Job Management Flow)
+
+Sơ đồ này mô tả luồng quản lý công việc thu thập dữ liệu. Các trang JSP như dashboard, myJobs, createJob, editJob, jobDetails và jobView tương tác với các Servlet tương ứng để xử lý các thao tác CRUD (tạo, đọc, cập nhật, xóa) trên công việc thu thập. Các Servlet này sử dụng ScrapeJobDao để truy cập bảng scrape_job trong cơ sở dữ liệu, và một số Servlet kích hoạt JobProcessor để xử lý logic nghiệp vụ.
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
@@ -110,6 +121,8 @@ graph TD
 
 ### 3. Luồng Xử lý Công việc (Job Processing Flow)
 
+Sơ đồ này tập trung vào quy trình xử lý công việc thu thập nền. Khi tạo hoặc chỉnh sửa công việc, CreateJobServlet và EditJobServlet kích hoạt JobProcessor. JobProcessor quản lý ScrapeTask để thực hiện thu thập, sử dụng ScrapeManager và DevworkScraper để thu thập dữ liệu từ Devwork.vn. ProgressBroadcaster được sử dụng bởi JobProgressServlet để gửi cập nhật tiến độ theo thời gian thực qua Server-Sent Events.
+
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
 graph TD
@@ -139,6 +152,8 @@ graph TD
 
 ### 4. Luồng Truy cập Dữ liệu (Data Access Flow)
 
+Sơ đồ này minh họa cách các lớp mô hình dữ liệu tương tác với cơ sở dữ liệu. Các bean (User, ScrapeJob, JobDetail) được thao tác thông qua các DAO tương ứng (UserDao, ScrapeJobDao, JobDetailDao), sử dụng DBUtil để quản lý kết nối cơ sở dữ liệu. Mỗi DAO tương tác với một bảng cụ thể: user, scrape_job và job_detail.
+
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
 graph TD
@@ -164,6 +179,8 @@ graph TD
 ```
 
 ### 5. Luồng Tính năng Admin (Admin Features Flow)
+
+Sơ đồ này mô tả luồng tính năng quản trị dành cho người dùng admin. Trang statistics.jsp gửi yêu cầu đến StatisticsServlet, servlet này truy vấn UserDao và ScrapeJobDao để lấy dữ liệu thống kê từ các bảng user và scrape_job trong cơ sở dữ liệu, sau đó hiển thị thông tin tổng quan về hệ thống.
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
@@ -194,15 +211,6 @@ graph TD
     M4 --> DB1
     M5 --> DB2
 ```
-
-### Các thành phần
-
-- **Model**: Các lớp Java đại diện cho dữ liệu (User, ScrapeJob, JobDetail) và DAO để thao tác cơ sở dữ liệu (UserDao, ScrapeJobDao, JobDetailDao)
-- **View**: Các trang JSP cho giao diện người dùng (index.jsp, login.jsp, register.jsp, dashboard.jsp, myJobs.jsp, createJob.jsp, editJob.jsp, jobDetails.jsp, jobView.jsp, statistics.jsp)
-- **Controller**: Các Servlet xử lý yêu cầu và phản hồi HTTP (LoginServlet, DashboardServlet, MyJobsServlet, CreateJobServlet, EditJobServlet, DeleteJobServlet, JobDetailsServlet, StatisticsServlet, v.v.)
-- **Scraper**: Bộ thu thập web dựa trên Jsoup cho Devwork.vn (DevworkScraper, ScrapeManager)
-- **Job Processor**: Hệ thống hàng đợi nền để xử lý các tác vụ thu thập (JobProcessor, ScrapeTask, ProgressBroadcaster)
-- **Database**: MySQL với mã hóa UTF-8 để lưu trữ người dùng, công việc và dữ liệu đã thu thập (user, scrape_job, job_detail)
 
 ## Yêu cầu tiên quyết
 
@@ -264,17 +272,136 @@ graph TD
    - Hoặc sử dụng Tomcat Manager (<http://localhost:8080/manager/html>)
 5. Truy cập ứng dụng tại: <http://localhost:8080/app/>
 
-## Cách sử dụng
+## Hướng dẫn sử dụng
 
-1. **Đăng ký/Đăng nhập**: Tạo tài khoản hoặc đăng nhập vào hệ thống
-2. **Trang chủ**: Xem danh sách các công việc việc làm có sẵn
-3. **Bảng điều khiển**: Xem lịch sử công việc thu thập của bạn
-4. **Công việc của tôi**: Quản lý các công việc thu thập cá nhân (xem, chỉnh sửa, xóa)
-5. **Tạo công việc**: Nhập URL công việc Devwork (một URL mỗi dòng) để thu thập
-6. **Theo dõi tiến độ**: Xem tiến độ thu thập theo thời gian thực
-7. **Xem kết quả**: Nhấp vào các công việc đã hoàn thành để xem thông tin chi tiết
-8. **Chi tiết công việc**: Xem tiêu đề công việc, công ty, lương, kỹ năng (dưới dạng thẻ), mô tả và thông tin bổ sung
-9. **Thống kê** (Admin): Xem thống kê tổng quan về hệ thống (cho người dùng admin)
+### Đăng ký và Đăng nhập
+
+#### Đăng ký tài khoản mới
+
+- Truy cập trang đăng nhập tại <http://localhost:8080/app/login>
+- Nhấp vào liên kết "Đăng ký" nếu chưa có tài khoản
+- Điền thông tin:
+  - Tên đăng nhập (username)
+  - Mật khẩu (password)
+  - Xác nhận mật khẩu
+- Nhấp "Đăng ký" để tạo tài khoản
+- Sau khi đăng ký thành công, bạn sẽ được chuyển hướng đến trang đăng nhập
+
+#### Đăng nhập
+
+- Truy cập <http://localhost:8080/app/login>
+- Nhập tên đăng nhập và mật khẩu
+- Nhấp "Đăng nhập"
+- Sau khi đăng nhập thành công, bạn sẽ được chuyển hướng đến trang chủ
+
+### Trang chủ (Danh sách công việc)
+
+- Sau khi đăng nhập, bạn sẽ thấy trang chủ hiển thị danh sách các công việc việc làm đã được thu thập
+- Mỗi công việc hiển thị:
+  - Tiêu đề công việc
+  - Tên công ty
+  - Tỉnh/thành phố
+  - Mức lương
+  - Ngày thu thập
+  - Hình thu nhỏ (nếu có)
+- Sử dụng hộp tìm kiếm để lọc công việc theo từ khóa
+- Nhấp vào tiêu đề công việc để xem chi tiết
+
+### Bảng điều khiển (Dashboard)
+
+- Truy cập bảng điều khiển từ thanh điều hướng
+- Xem tổng quan:
+  - Số lượng công việc đã thu thập
+  - Trạng thái các công việc thu thập gần đây
+  - Thống kê cơ bản
+
+### Quản lý công việc thu thập cá nhân
+
+#### Xem công việc của tôi
+
+- Nhấp "Công việc của tôi" trong thanh điều hướng
+- Xem danh sách các công việc thu thập bạn đã tạo
+- Mỗi công việc hiển thị:
+  - Tên công việc
+  - Trạng thái (Đang xử lý, Hoàn thành, Lỗi)
+  - Ngày tạo
+  - Số URL đã nhập
+
+#### Tạo công việc thu thập mới
+
+- Nhấp "Tạo công việc" từ trang "Công việc của tôi"
+- Điền thông tin:
+  - Tên công việc (ví dụ: "Thu thập IT jobs Hà Nội")
+  - Danh sách URL (mỗi URL trên một dòng)
+  - URL phải là trang công việc từ Devwork.vn
+- Nhấp "Tạo công việc"
+- Công việc sẽ được thêm vào hàng đợi xử lý
+
+#### Chỉnh sửa công việc
+
+- Từ trang "Công việc của tôi", nhấp "Chỉnh sửa" bên cạnh công việc
+- Cập nhật tên công việc hoặc danh sách URL
+- Nhấp "Lưu thay đổi"
+
+#### Xóa công việc
+
+- Từ trang "Công việc của tôi", nhấp "Xóa" bên cạnh công việc
+- Xác nhận xóa trong hộp thoại
+
+### Theo dõi tiến độ thu thập
+
+- Sau khi tạo công việc, nhấp vào tên công việc để xem chi tiết
+- Trang chi tiết hiển thị:
+  - Thông tin công việc thu thập
+  - Danh sách URL đang được xử lý
+  - Thanh tiến độ theo thời gian thực
+  - Trạng thái từng URL (Đang thu thập, Hoàn thành, Lỗi)
+- Tiến độ được cập nhật tự động qua Server-Sent Events (SSE)
+
+### Xem kết quả thu thập
+
+- Khi công việc hoàn thành, nhấp vào "Xem kết quả" từ trang chi tiết công việc
+- Xem danh sách các công việc đã thu thập được:
+  - Tiêu đề công việc
+  - Tên công ty và liên kết
+  - Tỉnh/thành phố
+  - Mức lương
+  - Ngày thu thập
+- Nhấp vào tiêu đề để xem chi tiết từng công việc
+
+### Chi tiết công việc
+
+- Trang chi tiết hiển thị thông tin đầy đủ:
+  - Tiêu đề và thông tin cơ bản
+  - Mô tả công việc (có thể có nhiều phần)
+  - Kỹ năng yêu cầu (hiển thị dưới dạng thẻ)
+  - Thông tin bổ sung (địa điểm, kinh nghiệm, v.v.)
+  - Hình thu nhỏ công ty (nếu có)
+  - Liên kết đến trang gốc
+- Sử dụng nút "Quay lại" để trở về danh sách
+
+### Thống kê hệ thống (Chỉ dành cho Admin)
+
+- Người dùng có quyền admin có thể truy cập trang thống kê
+- Xem:
+  - Tổng số người dùng
+  - Tổng số công việc thu thập
+  - Tổng số công việc đã thu thập được
+  - Thống kê theo thời gian
+- Dữ liệu được cập nhật theo thời gian thực
+
+### Đăng xuất
+
+- Nhấp "Đăng xuất" trong thanh điều hướng
+- Bạn sẽ được chuyển hướng về trang đăng nhập
+
+### Lưu ý quan trọng
+
+- Đảm bảo URL nhập vào là trang công việc hợp lệ từ Devwork.vn
+- Quá trình thu thập có thể mất thời gian tùy thuộc vào số lượng URL
+- Theo dõi tiến độ để biết trạng thái công việc
+- Dữ liệu thu thập được lưu trữ vĩnh viễn trong cơ sở dữ liệu
+- Chỉ admin mới có quyền xem thống kê hệ thống
 
 ## Công nghệ được sử dụng
 
