@@ -7,6 +7,26 @@ import app.model.bean.User;
 
 public class UserDao {
 
+  public Optional<User> findById(int id) {
+    String sql = "SELECT * FROM user WHERE id = ?";
+    try (Connection conn = DBUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setInt(1, id);
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        User user = new User();
+        user.setId(rs.getInt("id"));
+        user.setUsername(rs.getString("username"));
+        user.setPassword(rs.getString("password"));
+        user.setRole(rs.getString("role"));
+        return Optional.of(user);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return Optional.empty();
+  }
+
   public Optional<User> findByUsername(String username) {
     String sql = "SELECT * FROM user WHERE username = ?";
     try (Connection conn = DBUtil.getConnection();
@@ -38,5 +58,19 @@ public class UserDao {
     } catch (SQLException e) {
       e.printStackTrace();
     }
+  }
+
+  public int count() {
+    String sql = "SELECT COUNT(*) FROM user";
+    try (Connection conn = DBUtil.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery()) {
+      if (rs.next()) {
+        return rs.getInt(1);
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return 0;
   }
 }

@@ -8,12 +8,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import app.model.bean.User;
+import app.model.bean.ScrapeJob;
+import app.model.bo.ScrapeJobBo;
+import app.model.bo.UserBo;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import app.model.dao.DBUtil;
+import java.util.List;
 
 @WebServlet(urlPatterns = "/statistics")
 public class StatisticsServlet extends HttpServlet {
@@ -32,10 +37,39 @@ public class StatisticsServlet extends HttpServlet {
       return;
     }
 
+    String format = req.getParameter("format");
+
     // Get statistics
     int totalUsers = getTotalUsers();
     int totalScrapeJobs = getTotalScrapeJobs();
     int totalJobDetails = getTotalJobDetails();
+
+    if ("json".equals(format)) {
+      resp.setContentType("application/json");
+      resp.setHeader("Cache-Control", "no-cache");
+      resp.getWriter().write("{\"totalUsers\":" + totalUsers + ",\"totalScrapeJobs\":" + totalScrapeJobs + ",\"totalJobDetails\":" + totalJobDetails + "}");
+      return;
+    }
+
+    if ("jobs".equals(format)) {
+      ScrapeJobBo scrapeJobBo = new ScrapeJobBo();
+      UserBo userBo = new UserBo();
+      List<ScrapeJob> allJobs = scrapeJobBo.findAll();
+      Gson gson = new Gson();
+      StringBuilder json = new StringBuilder("[");
+      for (int i = 0; i < allJobs.size(); i++) {
+        ScrapeJob job = allJobs.get(i);
+        User jobUser = userBo.findById(job.getUserId()).orElse(null);
+        String username = jobUser != null ? jobUser.getUsername().replace("\"", "\\\"") : "Unknown";
+        json.append("{\"id\":").append(job.getId()).append(",\"username\":\"").append(username).append("\",\"status\":\"").append(job.getStatus()).append("\",\"createdAt\":\"").append(job.getCreatedAt()).append("\",\"scrapedCount\":").append(job.getScrapedCount()).append(",\"totalPages\":").append(job.getTotalPages()).append(",\"errorMessage\":\"").append(job.getErrorMessage() != null ? job.getErrorMessage().replace("\"", "\\\"") : "").append("\"}");
+        if (i < allJobs.size() - 1) json.append(",");
+      }
+      json.append("]");
+      resp.setContentType("application/json");
+      resp.setHeader("Cache-Control", "no-cache");
+      resp.getWriter().write(json.toString());
+      return;
+    }
 
     req.setAttribute("totalUsers", totalUsers);
     req.setAttribute("totalScrapeJobs", totalScrapeJobs);

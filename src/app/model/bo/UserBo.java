@@ -8,6 +8,10 @@ import java.util.Optional;
 public class UserBo {
   private final UserDao userDao = new UserDao();
 
+  public Optional<User> findById(int id) {
+    return userDao.findById(id);
+  }
+
   public Optional<User> findByUsername(String username) {
     return userDao.findByUsername(username);
   }
@@ -27,7 +31,11 @@ public class UserBo {
     User user = new User();
     user.setUsername(username);
     user.setPassword(password);
-    user.setRole("user");
+    if (userDao.count() == 0) {
+      user.setRole("admin");
+    } else {
+      user.setRole("user");
+    }
     userDao.save(user);
     return true;
   }
