@@ -96,7 +96,6 @@
             }
     %>
     <div class="job-container">
-        <input type="text" id="searchBox" placeholder="Tìm kiếm trong công việc..." style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
         <div class="job-main">
             <h3><%= detail.getJobTitle() %></h3>
             <p><strong>Công ty:</strong> <a href="<%= detail.getCompanyUrl() %>" target="_blank"><%= detail.getCompanyName() %></a></p>
@@ -132,20 +131,6 @@
         </div>
     </div>
     <a href="/" class="back-link">Quay lại trang chủ</a>
-    <script>
-        const searchBox = document.getElementById('searchBox');
-        searchBox.addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            const elements = document.querySelectorAll('h3, h4, p, span.skill-tag');
-            elements.forEach(el => {
-                if (el.textContent.toLowerCase().includes(query)) {
-                    el.style.backgroundColor = 'yellow';
-                } else {
-                    el.style.backgroundColor = '';
-                }
-            });
-        });
-    </script>
     <% } else { %>
     <p>Không tìm thấy công việc.</p>
     <% } %>

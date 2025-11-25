@@ -64,8 +64,6 @@
         <p><strong>Lỗi:</strong> <%= job.getErrorMessage() %></p>
     <% } %>
 
-    <input type="text" id="searchBox" placeholder="Tìm kiếm công việc đã thu thập..." style="width: 100%; padding: 10px; margin: 20px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
-
     <h2>Công việc đã thu thập</h2>
     <div id="progressArea">
         <label for="progressBar">Tiến độ:</label>
@@ -136,22 +134,6 @@
     </div>
     <% } %>
     <a href="dashboard">Quay lại bảng điều khiển</a>
-    <script>
-        const searchBox = document.getElementById('searchBox');
-        searchBox.addEventListener('input', function() {
-            const query = this.value.toLowerCase();
-            const containers = document.querySelectorAll('.job-container');
-            containers.forEach(container => {
-                const title = container.querySelector('h3').textContent.toLowerCase();
-                const company = container.querySelector('p strong').nextSibling.textContent.toLowerCase();
-                if (title.includes(query) || company.includes(query)) {
-                    container.style.display = '';
-                } else {
-                    container.style.display = 'none';
-                }
-            });
-        });
-    </script>
     <script>
         (function() {
             const jobId = '<%= job.getId() %>';
