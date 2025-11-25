@@ -23,7 +23,7 @@ Một ứng dụng Java Servlet full-stack thu thập thông tin việc làm t�
 - **View**: Các trang JSP cho giao diện người dùng (index.jsp, login.jsp, register.jsp, dashboard.jsp, myJobs.jsp, createJob.jsp, editJob.jsp, jobDetails.jsp, jobView.jsp, statistics.jsp)
 - **Controller**: Các Servlet xử lý yêu cầu và phản hồi HTTP (LoginServlet, DashboardServlet, MyJobsServlet, CreateJobServlet, EditJobServlet, DeleteJobServlet, JobDetailsServlet, StatisticsServlet, v.v.)
 - **Scraper**: Bộ thu thập web dựa trên Jsoup cho Devwork.vn (DevworkScraper, ScrapeManager)
-- **Job Processor**: Hệ thống hàng đợi nền để xử lý các tác vụ thu thập (JobProcessor, ScrapeTask, ProgressBroadcaster)
+- **Job Processor**: Hệ thống hàng đợi nền để xử lý các tác vụ thu thập (JobProcessor, ScrapeTask)
 - **Database**: MySQL với mã hóa UTF-8 để lưu trữ người dùng, công việc và dữ liệu đã thu thập (user, scrape_job, job_detail)
 
 ### 1. Luồng Xác thực (Authentication Flow)
@@ -121,7 +121,7 @@ graph TD
 
 ### 3. Luồng Xử lý Công việc (Job Processing Flow)
 
-Sơ đồ này tập trung vào quy trình xử lý công việc thu thập nền. Khi tạo hoặc chỉnh sửa công việc, CreateJobServlet và EditJobServlet kích hoạt JobProcessor. JobProcessor quản lý ScrapeTask để thực hiện thu thập, sử dụng ScrapeManager và DevworkScraper để thu thập dữ liệu từ Devwork.vn. ProgressBroadcaster được sử dụng bởi JobProgressServlet để gửi cập nhật tiến độ theo thời gian thực qua Server-Sent Events.
+Sơ đồ này tập trung vào quy trình xử lý công việc thu thập nền. Khi tạo hoặc chỉnh sửa công việc, CreateJobServlet và EditJobServlet kích hoạt JobProcessor. JobProcessor quản lý ScrapeTask để thực hiện thu thập, sử dụng ScrapeManager và DevworkScraper để thu thập dữ liệu từ Devwork.vn.
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "basis"}}}%%
@@ -129,23 +129,19 @@ graph TD
     subgraph "Controllers"
         C5[CreateJobServlet]
         C6[EditJobServlet]
-        C10[JobProgressServlet]
     end
 
     subgraph "Business Logic"
         P1[JobProcessor]
         T1[ScrapeTask]
-        PB1[ProgressBroadcaster]
         S1[DevworkScraper]
         S2[ScrapeManager]
     end
 
     C5 --> P1
     C6 --> P1
-    C10 --> PB1
 
     P1 --> T1
-    P1 --> PB1
     P1 --> S2
     S2 --> S1
 ```
@@ -425,13 +421,12 @@ project-root/
 │       │   ├── bo/         # Đối tượng nghiệp vụ
 │       │   └── dao/        # Đối tượng truy cập dữ liệu (UserDao, ScrapeJobDao, JobDetailDao, DBUtil)
 │       ├── scraper/        # Logic thu thập web (DevworkScraper, ScrapeManager)
-│       └── util/           # Tiện ích (JobProcessor, ScrapeTask, ProgressBroadcaster)
+│       └── util/           # Tiện ích (JobProcessor, ScrapeTask)
 ├── webapp/                 # Views JSP và tài nguyên web
 │   ├── *.jsp               # Mẫu views
 │   └── WEB-INF/
 ├── target/                 # Đầu ra build
 ├── schema.sql              # Lược đồ cơ sở dữ liệu
-├── deprecated_sql/         # Các file SQL đã lỗi thời (giữ để tham khảo)
 ├── pom.xml                 # Cấu hình Maven
 └── README.md               # File hiện tại mà bạn đang đọc
 ```

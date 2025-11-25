@@ -5,13 +5,10 @@ import app.model.bean.ScrapeJob;
 import app.model.bo.JobDetailBo;
 import app.model.bo.ScrapeJobBo;
 import app.scraper.ScrapeManager;
-import com.google.gson.Gson;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Map;
-import java.util.HashMap;
 
 public class JobProcessor {
   private static JobProcessor instance;
@@ -57,13 +54,6 @@ public class JobProcessor {
 
     try {
       scrapeJobBo.updateStatus(job.getId(), "running");
-      // publish running status
-      Map<String, Object> runningState = new HashMap<>();
-      runningState.put("id", job.getId());
-      runningState.put("status", "running");
-      runningState.put("scrapedCount", job.getScrapedCount());
-      runningState.put("totalPages", job.getTotalPages());
-      ProgressBroadcaster.getInstance().publish(job.getId(), new com.google.gson.Gson().toJson(runningState));
       // Ensure total pages is recorded (in case job was created without total)
       if (job.getTotalPages() == 0) {
         scrapeJobBo.updateTotalPages(job.getId(), urls.size());
@@ -72,41 +62,18 @@ public class JobProcessor {
         detail.setScrapeJobId(job.getId());
         jobDetailBo.save(detail);
         scrapeJobBo.incrementScrapedCount(job.getId());
-        ScrapeJob refreshed = scrapeJobBo.findById(job.getId());
-        Map<String, Object> updateState = new HashMap<>();
-        updateState.put("id", refreshed.getId());
-        updateState.put("status", refreshed.getStatus());
-        updateState.put("scrapedCount", refreshed.getScrapedCount());
-        updateState.put("totalPages", refreshed.getTotalPages());
-        ProgressBroadcaster.getInstance().publish(job.getId(), new com.google.gson.Gson().toJson(updateState));
       });
       if (results.isEmpty()) {
         throw new Exception("No data scraped from provided URLs. Please check if URLs are valid Devwork job pages.");
       }
 
       scrapeJobBo.updateStatus(job.getId(), "completed");
-      // publish completion
-      Map<String, Object> completedState = new HashMap<>();
-      completedState.put("id", job.getId());
-      completedState.put("status", "completed");
-      completedState.put("scrapedCount", scrapeJobBo.findById(job.getId()).getScrapedCount());
-      completedState.put("totalPages", scrapeJobBo.findById(job.getId()).getTotalPages());
-      app.util.ProgressBroadcaster.getInstance().publish(job.getId(),
-          new com.google.gson.Gson().toJson(completedState));
       System.out.println(
           "[JobProcessor] Job ID " + job.getId() + " completed successfully with " + results.size() + " results");
     } catch (Exception e) {
       String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error occurred during scraping";
       scrapeJobBo.updateErrorMessage(job.getId(), errorMsg);
       scrapeJobBo.updateStatus(job.getId(), "failed");
-      // publish failed status
-      Map<String, Object> failedState = new HashMap<>();
-      failedState.put("id", job.getId());
-      failedState.put("status", "failed");
-      failedState.put("error", errorMsg);
-      failedState.put("scrapedCount", scrapeJobBo.findById(job.getId()).getScrapedCount());
-      failedState.put("totalPages", scrapeJobBo.findById(job.getId()).getTotalPages());
-      ProgressBroadcaster.getInstance().publish(job.getId(), new Gson().toJson(failedState));
       System.err.println("[JobProcessor] Job ID " + job.getId() + " failed: " + errorMsg);
       e.printStackTrace();
     }

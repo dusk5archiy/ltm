@@ -141,12 +141,13 @@
             const progressText = document.getElementById('progressText');
             const statusSpan = document.getElementById('jobStatus');
 
-            // Prefer SSE (EventSource) for live updates; fallback to polling
-            if (typeof(EventSource) !== 'undefined') {
-                const source = new EventSource('progress-sse?id=' + jobId);
-                source.onmessage = function(e) {
-                    try {
-                        const data = JSON.parse(e.data);
+            function fetchProgress() {
+                fetch('progress?id=' + jobId, { credentials: 'same-origin', cache: 'no-cache' })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Network error');
+                        return res.json();
+                    })
+                    .then(data => {
                         const total = data.totalPages || 0;
                         const scraped = data.scrapedCount || 0;
                         progressBar.max = total > 0 ? total : 1;
@@ -154,40 +155,14 @@
                         progressText.textContent = scraped + '/' + total;
                         if (statusSpan) statusSpan.textContent = data.status;
                         if (data.status === 'completed' || data.status === 'failed') {
-                            source.close();
+                            clearInterval(pollInterval);
                         }
-                    } catch (ex) {
-                        console.error('Bad SSE payload', ex);
-                    }
-                };
-                source.onerror = function(err) {
-                    console.error('SSE error', err);
-                    source.close();
-                };
-            } else {
-                function fetchProgress() {
-                    fetch('progress?id=' + jobId, { credentials: 'same-origin', cache: 'no-cache' })
-                        .then(res => {
-                            if (!res.ok) throw new Error('Network error');
-                            return res.json();
-                        })
-                        .then(data => {
-                            const total = data.totalPages || 0;
-                            const scraped = data.scrapedCount || 0;
-                            progressBar.max = total > 0 ? total : 1;
-                            progressBar.value = scraped;
-                            progressText.textContent = scraped + '/' + total;
-                            if (statusSpan) statusSpan.textContent = data.status;
-                            if (data.status === 'completed' || data.status === 'failed') {
-                                clearInterval(pollInterval);
-                            }
-                        })
-                        .catch(err => console.error('Failed to fetch progress', err));
-                }
-
-                const pollInterval = setInterval(fetchProgress, 2000);
-                fetchProgress();
+                    })
+                    .catch(err => console.error('Failed to fetch progress', err));
             }
+
+            const pollInterval = setInterval(fetchProgress, 2000);
+            fetchProgress();
         })();
     </script>
 </body>
