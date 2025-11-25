@@ -1,5 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
+<%@ page import="com.google.gson.Gson" %>
+<%@ page import="com.google.gson.reflect.TypeToken" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.HashMap" %>
 <%@ page import="app.model.bean.JobDetail" %>
 <html>
 <head>
@@ -23,6 +28,14 @@
         .actions button { margin-right: 5px; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; }
         .edit-btn { background-color: #ffc107; color: #000; text-decoration: none; display: inline-block; padding: 5px 10px; border-radius: 3px; }
         .delete-btn { background-color: #dc3545; color: #fff; }
+        .skill-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -30,6 +43,7 @@
         <%@ include file="navbar.jsp" %>
     </nav>
     <h1>Việc đã thu thập của tôi</h1>
+    <input type="text" id="searchBox" placeholder="Tìm kiếm công việc..." style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
     <table>
         <%
             List<JobDetail> jobDetails = (List<JobDetail>) request.getAttribute("jobDetails");
@@ -43,10 +57,40 @@
             %>
             <td>
                 <div class="job-card">
+                    <%
+                        Gson gson = new Gson();
+                        List<String> skills = new ArrayList<>();
+                        try {
+                            skills = gson.fromJson(detail.getSkills(), new TypeToken<List<String>>(){}.getType());
+                        } catch (Exception e) {
+                            // Leave empty if parsing fails
+                        }
+                        Map<String, String> descriptions = new HashMap<>();
+                        try {
+                            descriptions = gson.fromJson(detail.getDescriptions(), new TypeToken<Map<String, String>>(){}.getType());
+                        } catch (Exception e) {
+                            // Leave empty if parsing fails
+                        }
+                        StringBuilder hiddenText = new StringBuilder();
+                        for (String skill : skills) {
+                            hiddenText.append(skill).append(" ");
+                        }
+                        for (String desc : descriptions.values()) {
+                            hiddenText.append(desc).append(" ");
+                        }
+                    %>
                     <div class="job-title"><%= detail.getJobTitle() != null ? detail.getJobTitle() : "Việc làm chưa có tiêu đề" %></div>
                     <div class="company"><%= detail.getCompanyName() != null ? detail.getCompanyName() : "Công ty chưa xác định" %></div>
                     <div class="location"><%= detail.getProvince() != null ? detail.getProvince() : "Chưa xác định địa điểm" %></div>
                     <div class="salary"><%= detail.getSalary() != null ? detail.getSalary() : "Chưa xác định lương" %></div>
+                    <% if (!skills.isEmpty()) { %>
+                    <div>
+                        <strong>Kỹ năng:</strong>
+                        <% for (String skill : skills) { %>
+                            <span class="skill-tag"><%= skill %></span>
+                        <% } %>
+                    </div>
+                    <% } %>
                     <div class="url"><a href="jobView?id=<%= detail.getId() %>">Xem việc làm</a></div>
                     <div class="actions">
                         <a href="editJob?id=<%= detail.getId() %>" class="edit-btn">Chỉnh sửa</a>
@@ -55,6 +99,7 @@
                             <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc chắn muốn xóa công việc này?')">Xóa</button>
                         </form>
                     </div>
+                    <div style="display:none;" class="hidden-search-content"><%= hiddenText.toString() %></div>
                 </div>
             </td>
             <% } %>
@@ -62,10 +107,25 @@
         <% } %>
     </table>
     <script>
-        function deleteJob(id) {
-            // Temporarily empty
-            alert('Delete job ' + id);
-        }
+        const searchBox = document.getElementById('searchBox');
+        searchBox.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const tds = document.querySelectorAll('td');
+            tds.forEach(td => {
+                const card = td.querySelector('.job-card');
+                if (card) {
+                    const title = card.querySelector('.job-title').textContent.toLowerCase();
+                    const company = card.querySelector('.company').textContent.toLowerCase();
+                    const location = card.querySelector('.location').textContent.toLowerCase();
+                    const hidden = card.querySelector('.hidden-search-content').textContent.toLowerCase();
+                    if (title.includes(query) || company.includes(query) || location.includes(query) || hidden.includes(query)) {
+                        td.style.display = '';
+                    } else {
+                        td.style.display = 'none';
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>

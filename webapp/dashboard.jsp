@@ -23,6 +23,7 @@
     <p>Chào mừng, <%= ((app.model.bean.User) session.getAttribute("user")).getUsername() %>!</p>
     <a href="createJob">Tạo công việc thu thập mới</a>
     <h2>Công việc thu thập của bạn</h2>
+    <input type="text" id="searchBox" placeholder="Tìm kiếm công việc thu thập..." style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
     <table border="1">
         <tr>
             <th>ID</th>
@@ -54,6 +55,22 @@
             _jobIdsBuilder.append(job.getId());
         }
     %>
+    <script>
+        const searchBox = document.getElementById('searchBox');
+        searchBox.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const status = row.cells[1].textContent.toLowerCase();
+                const id = row.cells[0].textContent.toLowerCase();
+                if (status.includes(query) || id.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
     <script>
         (function() {
             function fetchProgress(jobId) {

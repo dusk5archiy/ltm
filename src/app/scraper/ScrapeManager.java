@@ -17,7 +17,7 @@ public class ScrapeManager {
     System.out.println("[ScrapeManager] Starting to scrape " + urls.size() + " URLs");
     // ExecutorService executor = Executors.newFixedThreadPool(Math.min(urls.size(),
     // 4));
-    ExecutorService executor = Executors.newFixedThreadPool(1); // 1 FOR EXPERIMENTRAL
+    ExecutorService executor = Executors.newFixedThreadPool(3); // 1 FOR EXPERIMENTRAL
 
     final CompletionService<JobDetail> completionService = new ExecutorCompletionService<>(executor);
     int submitted = 0;
